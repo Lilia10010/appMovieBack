@@ -16,6 +16,7 @@ app.use(express.json())
 
 const port = 5000
 
+
 app.get('/', (request, response) => {
     response.status(200).json({
         message: "criado 😎"
