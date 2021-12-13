@@ -1,32 +1,28 @@
-import http from 'http'
+import dotenv from 'dotenv';
+import express from 'express';
+import mongoose from 'mongoose';
+import { apiRouter } from './routes/api.routes';
 
-import express from 'express'
+dotenv.config();
 
+const app = express();
+app.use(express.json());
+app.use(apiRouter);
 
-const app = express()
+const ENV_VARS = {
+    port: process.env.PORT,
+    mongoURI: process.env.MONGO_URI,
+    token_secret: process.env.TOKEN_SECRET
+}
 
-app.use(express.json())
+app.listen(ENV_VARS.port, async () => {
+    console.log('Server funcionando na porta: ', ENV_VARS.port);
 
-//sem express
-// const server = http.createServer((request, response) =>{
-//     response.statusCode = 200
-//     response.setHeader('Content-Type', 'text/plain')
-//     response.end('Funcionou 🙃')
-// })
+    if (ENV_VARS.mongoURI) {
+        mongoose.connect(ENV_VARS.mongoURI);
+    } else {
+        console.log('Erro na conexão com DB.');
+    }
+});
 
-const port = 5000
-
-
-app.get('/', (request, response) => {
-    response.status(200).json({
-        message: "criado 😎"
-    })
-})
-
-app.listen(port, () => {
-    console.log('Server secees port:  ', port)
-})
-
-// server.listen(port, () => {
-//     console.log('server funcionando na porta: ', port , '😎')
-// })
+export { ENV_VARS }
