@@ -1,3 +1,4 @@
+import { compare } from 'bcryptjs';
 import { Request, Response } from 'express'; 
 import { User } from '../models/user.model';
 
@@ -6,6 +7,25 @@ interface UserResult {
     name: string;
     email?: string;
     password?: string;
+}
+
+async function login(req: Request, res: Response){
+    const { email, password } = req.body
+    const user = await User.findOne({ email })
+
+    if (!user) {
+        console.log('não encontrou o user')
+        return res.status(404).json({
+            message: 'Usuário não encontrado'
+        });
+    }
+
+    if (await compare(password, user.password)) {
+		return res.json({ status: 'ok', data: 'success' })
+	} 
+
+    res.json({ status: 'error', data: 'Invalid password' })
+
 }
 
 async function view(req: Request, res: Response) {
@@ -85,4 +105,4 @@ async function destroy(req: Request, res: Response) {
     });
 }
 
-export { view, create, destroy };
+export { login, view, create, destroy };

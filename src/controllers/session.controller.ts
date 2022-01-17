@@ -6,26 +6,35 @@ import { ENV_VARS } from '../index';
 const token_secret = process.env.TOKEN_SECRET;
 
 function index(req: Request, res: Response) {
-
-    if (!req.headers.authorization) {
-        return res.status(401).json({
-            error: 'Usuário não autorizado '
+    try {
+        if (!req.headers.authorization) {
+            return res.status(401).json({
+                error: 'Usuário não autorizado '
+            });
+        }
+    
+        if (!req.user) {
+            return res.status(401).json({
+                error: 'Usuário não autorizado '
+            });
+        }
+    
+        return res.status(200).json({
+            userId: req.user
         });
+        
+    } catch (e) {
+        return res.status(400).json(
+            {
+                status: e
+            }
+        );        
     }
-
-    if (!req.user) {
-        return res.status(401).json({
-            error: 'Usuário não autorizado '
-        });
-    }
-
-    return res.status(200).json({
-        userId: req.user
-    });
 }
 
 async function create(req: Request, res: Response) {
-    const { email, password } = req.body;
+    try {
+        const { email, password } = req.body;
 
     const userExists = await User.findOne({ email });
 
@@ -53,13 +62,19 @@ async function create(req: Request, res: Response) {
             },
             accessToken
         }
-    );
+    )
+    } catch ( e ) {
+        return res.status(400).json(
+            {
+                status: e
+            }
+        );
+    }
 }
 
 function createAccessToken(userId: string) {
 
-    let token = ENV_VARS.token_secret as string;
-
+  /*   let token = ENV_VARS.token_secret as string;
     const accessToken = jwt.sign(
         {
             id: userId
@@ -69,8 +84,18 @@ function createAccessToken(userId: string) {
             expiresIn: 900 // 15min
         }
     );
+    return accessToken; */
 
-    return accessToken;
+
+    return jwt.sign(
+        {
+            id: userId
+        },
+        ENV_VARS.token_secret as string,
+        {
+            expiresIn: 900 //
+        }
+    )
 }
 
 export { create, index };
